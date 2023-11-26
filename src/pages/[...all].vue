@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import axios from 'axios'
 
-const MOCK = true
-const server = MOCK ? 'https://yapi.pro/mock/183638' : ''
 const API = {
-  queryDetails: `${server}/clipboard/queryDetails`,
-  saveText: `${server}/clipboard/saveText`,
-  uploadFile: `${server}/clipboard/uploadFile`,
-  deleteFile: `${server}/clipboard/deleteFile`,
-  downloadFile: `${server}/clipboard/downloadFile`,
+  queryDetails: '/clipboard/queryDetails',
+  saveText: '/clipboard/saveText',
+  uploadFile: '/clipboard/uploadFile',
+  deleteFile: '/clipboard/deleteFile',
+  downloadFile: '/clipboard/downloadFile',
 }
 
 // const props = defineProps<{ name: string }>()
@@ -27,7 +25,13 @@ function handleKeyDown(event) {
     event.preventDefault()
 
     // 输出 textarea 中的内容
-    // console.log(textareaContent.value)
+    axios.post(API.saveText, {
+      clipboardName: clipboardName.value,
+      clipboardText: textareaContent.value,
+    }).then(() => {
+      // TODO: 提示成功/失败
+      // console.log(res)
+    })
   }
 }
 
@@ -50,8 +54,8 @@ function onFileSelected() {
 
 onMounted(() => {
   axios.get(API.queryDetails, { params: { clipboardName: clipboardName.value } }).then((res) => {
-    // console.log('res: ', res.data)
-    textareaContent.value = res.data.clipboardText
+    // console.log('res: ', res.data.data)
+    textareaContent.value = res.data.data.clipboardText
   })
 })
 </script>
