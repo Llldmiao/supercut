@@ -18,22 +18,31 @@ const clipboardName = ref(route.params.all[0])
 // })
 const textareaContent = ref('')
 
-function handleKeyDown(event) {
-  // 检查是否按下了 Ctrl 键，并且同时按下了 S 键
-  if (event.ctrlKey && event.key === 's') {
-    // 阻止浏览器默认行为（避免保存页面）
-    event.preventDefault()
+function copyToClipboard() {
+  navigator.clipboard.writeText(textareaContent.value) // 将内容复制到剪贴板
+    .then(() => {
+      // 复制成功的处理逻辑
+      // alert('内容已复制到剪贴板')
+    })
+    .catch((err) => {
+      // 复制失败的处理逻辑
+      console.error('复制失败：', err)
+    })
+}
 
-    // 输出 textarea 中的内容
-    axios.post(API.saveText, {
+async function saveText() {
+  try {
+    const res = await axios.post(API.saveText, {
       clipboardName: clipboardName.value,
       clipboardText: textareaContent.value,
-    }).then(() => {
-      // TODO: 提示成功/失败
-      // console.log(res)
     })
+    return res
+  }
+  catch (error) {
+    console.error(error)
   }
 }
+const saveTextInterval = ref<NodeJS.Timer | null>(null)
 
 const TAB = [{
   label: 'text',
@@ -51,25 +60,49 @@ function onFileSelected() {
   // TODO: 待完善
   // console.log('onFileSelected', e)
 }
-
+const createTime = ref('')
+const lastModifiedTime = ref('')
 onMounted(() => {
   axios.get(API.queryDetails, { params: { clipboardName: clipboardName.value } }).then((res) => {
     // console.log('res: ', res.data.data)
     textareaContent.value = res.data.data.clipboardText
+    createTime.value = res.data.data.gmtCreate
+    lastModifiedTime.value = res.data.data.gmtModify
   })
+})
+// function handleCtrlS() {
+//   saveText()
+// }
+document.addEventListener('keydown', (e) => {
+  if ((window.navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey) && e.keyCode === 83) {
+    e.preventDefault()
+    saveText()
+  }
+}, false)
+let timeoutId: NodeJS.Timeout | null = null
+
+function handleInput() {
+  if (timeoutId)
+    clearTimeout(timeoutId)
+
+  timeoutId = setTimeout(saveText, 1000)
+}
+
+onBeforeUnmount(() => {
+  saveTextInterval.value && clearInterval(saveTextInterval.value)
 })
 </script>
 
 <template>
-  <div>
+  <div h-full p-b-6>
     <div inline-block flex text-4xl class="header">
       <div i-whh-pastealt w-4 />
       <p ml-2 font-size-4>
         粘贴板名称：{{ route.params.all[0] }}
       </p>
     </div>
-    <div class="content" mt-5 flex justify-center>
-      <div class="content-left" wa flex-row>
+    <div class="content" mt-5 flex-row justify-center>
+      <div class="content-left" wa flex-auto flex-row>
         <div class="tabs" flex>
           <div
             v-for="item in TAB" :key="item.label" class="tab" :class="[item.label === currentTab ? 'active' : '']"
@@ -78,34 +111,34 @@ onMounted(() => {
             {{ item.name }}
           </div>
         </div>
-        <div v-if="currentTab === 'text'" class="note-area" ha wa>
-          <textarea id="note" v-model="textareaContent" name="note" min-h-lg w-3xl resize-none border placeholder="可以随便记录点什么，单次支持20万字符..." @keydown="handleKeyDown" />
+        <div v-if="currentTab === 'text'" class="note-area" ha w-full>
+          <textarea id="note" v-model="textareaContent" name="note" w-full resize-none border outline-none placeholder="可以随便记录点什么，单次支持20万字符..." @input="handleInput" />
         </div>
-        <div v-if="currentTab === 'file'" class="note-area" min-h-lg w-3xl border>
+        <div v-if="currentTab === 'file'" class="note-area" min-h-lg w-full border>
           <span>最多上传10个文件，单文件50MB内，总大小500MB内， 当前已传 0 个文件，共计 10.1KB，还能上传 10 个文件，有效期为上传后7天内。
             如需大文件传送，可以使用 即时传，支持500M以内大小文件传送。</span>
           <input type="file" multiple @input="onFileSelected">
         </div>
-        <div class="content-right" w-md>
-          <button m-3 text-sm btn>
-            复制文本
-          </button>
-          <button m-3 text-sm btn>
-            下载保存
-          </button>
-          <div class="info">
-            创建时间：
-            2023-09-16 20:20:26
-            更新时间：
-            2023-11-04 10:27:20
-            上次查看：
-            2023-11-04 10:27:02
-            过期删除时间：(三年后)
-            2026-11-03 10:27:02
-            查看次数：
-            105次
-          </div>
-        </div>
+      </div>
+      <div class="content-right" flex-auto>
+        <button m-3 text-sm btn @click="copyToClipboard">
+          复制文本
+        </button>
+        <!-- <button m-3 text-sm btn>
+          下载保存
+        </button>
+        <div class="info">
+          创建时间：
+          {{ createTime }}
+          更新时间：
+          {{ lastModifiedTime }}
+          上次查看：
+          2023-11-04 10:27:02
+          过期删除时间：(三年后)
+          2026-11-03 10:27:02
+          查看次数：
+          105次
+        </div> -->
       </div>
     </div>
   </div>
@@ -120,7 +153,7 @@ onMounted(() => {
 }
 
 #note {
-  min-height: 720px;
+  min-height: 50vh;
   font-family: Consolas, "Liberation Mono", Courier, monospace;
   line-height: 1.4;
   font-size: 16px;
@@ -131,7 +164,7 @@ onMounted(() => {
   word-spacing: normal;
 
   &:focus {
-    border: none;
+    box-shadow: 0 3px 10px rgba(0, 0, 255, 0.3);
   }
 }
 </style>
