@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import axios from 'axios'
+import copy from 'copy-to-clipboard'
+import { ElMessage } from 'element-plus'
+import { DocumentCopy } from '@element-plus/icons-vue'
+import { CopyOutline } from '@vicons/ionicons5'
+import { NIcon } from 'naive-ui'
 
 const API = {
   queryDetails: '/clipboard/queryDetails',
@@ -19,15 +24,25 @@ const clipboardName = ref(route.params.all[0])
 const textareaContent = ref('')
 
 function copyToClipboard() {
-  navigator.clipboard.writeText(textareaContent.value) // 将内容复制到剪贴板
-    .then(() => {
-      // 复制成功的处理逻辑
-      // alert('内容已复制到剪贴板')
-    })
-    .catch((err) => {
-      // 复制失败的处理逻辑
-      console.error('复制失败：', err)
-    })
+  copy(textareaContent.value, {
+    debug: true,
+    message: 'Copy to clipboard',
+    format: 'text/html',
+  })
+  ElMessage({
+    message: '已复制~~',
+    type: 'success',
+  })
+
+  // navigator.clipboard.writeText(textareaContent.value) // 将内容复制到剪贴板
+  //   .then(() => {
+  //     // 复制成功的处理逻辑
+  //     alert('内容已复制到剪贴板')
+  //   })
+  //   .catch((err) => {
+  //     // 复制失败的处理逻辑
+  //     console.error('复制失败：', err)
+  //   })
 }
 
 async function saveText() {
@@ -69,12 +84,16 @@ onMounted(() => {
     createTime.value = res.data.data.gmtCreate
     lastModifiedTime.value = res.data.data.gmtModify
   })
+  setTimeout(() => {
+    // console.log('headerR', headerR);
+
+  }, 100)
 })
 // function handleCtrlS() {
 //   saveText()
 // }
 document.addEventListener('keydown', (e) => {
-  if ((window.navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey) && e.keyCode === 83) {
+  if ((window.navigator.userAgent.match('Mac') ? e.metaKey : e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
     e.preventDefault()
     saveText()
   }
@@ -88,6 +107,8 @@ function handleInput() {
   timeoutId = setTimeout(saveText, 1000)
 }
 
+const headerR = ref('')
+
 onBeforeUnmount(() => {
   saveTextInterval.value && clearInterval(saveTextInterval.value)
 })
@@ -97,7 +118,7 @@ onBeforeUnmount(() => {
   <div h-full p-b-6>
     <div inline-block flex text-4xl class="header">
       <div i-whh-pastealt w-4 />
-      <p ml-2 font-size-4>
+      <p ref="headerR" ml-2 font-size-4>
         粘贴板名称：{{ route.params.all[0] }}
       </p>
     </div>
@@ -112,7 +133,10 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <div v-if="currentTab === 'text'" class="note-area" ha w-full>
-          <textarea id="note" v-model="textareaContent" name="note" w-full resize-none border outline-none placeholder="可以随便记录点什么，单次支持20万字符..." @input="handleInput" />
+          <textarea
+            id="note" v-model="textareaContent" name="note" w-full resize-none border outline-none
+            placeholder="可以随便记录点什么，单次支持20万字符..." @input="handleInput"
+          />
         </div>
         <div v-if="currentTab === 'file'" class="note-area" min-h-lg w-full border>
           <span>最多上传10个文件，单文件50MB内，总大小500MB内， 当前已传 0 个文件，共计 10.1KB，还能上传 10 个文件，有效期为上传后7天内。
@@ -121,9 +145,15 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="content-right" flex-auto>
-        <button m-3 text-sm btn @click="copyToClipboard">
+        <n-button color="#8a2be2" @click="copyToClipboard">
+          <template #icon>
+            <NIcon>
+              <CopyOutline />
+            </NIcon>
+          </template>
           复制文本
-        </button>
+        </n-button>
+        <!-- <el-button type="primary" :icon="DocumentCopy" @click="copyToClipboard">复制文本</el-button> -->
         <!-- <button m-3 text-sm btn>
           下载保存
         </button>
@@ -145,6 +175,10 @@ onBeforeUnmount(() => {
 </template>
 
 <style type="less" scoped>
+button {
+  background-color: #8a2be2;
+}
+
 .tab {
   &.active {
     border: 1px solid rgb(255, 255, 255);
