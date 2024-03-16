@@ -54,7 +54,7 @@ const TAB = [{
   label: 'file',
   name: '文件',
 }]
-const currentTab = ref('file')
+const currentTab = ref('text')
 function onTabClick(label: string) {
   // console.log('onTabClick', label)
   currentTab.value = label
