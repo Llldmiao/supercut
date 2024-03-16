@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Import Vue FilePond
 import vueFilePond from 'vue-filepond'
+import { defineEmits, defineProps, reactive, ref } from 'vue'
 
 // Import FilePond styles
 import 'filepond/dist/filepond.min.css'
@@ -16,6 +17,8 @@ import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
 import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size'
 
+const emits = defineEmits(['addfile'])
+
 // Create component
 const FilePond = vueFilePond(
   FilePondPluginFileValidateType,
@@ -25,6 +28,10 @@ const FilePond = vueFilePond(
 
 const myFiles = reactive([])
 const pond = ref('')
+
+function onAddFile(err, file) {
+  emits('addfile', err, file)
+}
 </script>
 
 <template>
@@ -35,8 +42,8 @@ const pond = ref('')
       label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>"
       allow-multiple="true"
       max-files="10"
-      accepted-file-types="*"
       :files="myFiles"
+      @addfile="onAddFile"
     />
   </div>
 </template>

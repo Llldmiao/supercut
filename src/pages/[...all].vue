@@ -2,7 +2,8 @@
 import axios from 'axios'
 import copy from 'copy-to-clipboard'
 import { ElMessage } from 'element-plus'
-import { DocumentCopy } from '@element-plus/icons-vue'
+
+// import { DocumentCopy } from '@element-plus/icons-vue'
 import { CopyOutline } from '@vicons/ionicons5'
 import { NIcon } from 'naive-ui'
 
@@ -17,10 +18,7 @@ const API = {
 // const props = defineProps<{ name: string }>()
 const route = useRoute()
 const clipboardName = ref(route.params.all[0])
-// console.log('router: ', route.params.all[0])
-// watchEffect(() => {
-//   user.setNewName(props.name)
-// })
+
 const textareaContent = ref('')
 
 function copyToClipboard() {
@@ -33,16 +31,6 @@ function copyToClipboard() {
     message: '已复制~~',
     type: 'success',
   })
-
-  // navigator.clipboard.writeText(textareaContent.value) // 将内容复制到剪贴板
-  //   .then(() => {
-  //     // 复制成功的处理逻辑
-  //     alert('内容已复制到剪贴板')
-  //   })
-  //   .catch((err) => {
-  //     // 复制失败的处理逻辑
-  //     console.error('复制失败：', err)
-  //   })
 }
 
 async function saveText() {
@@ -66,15 +54,12 @@ const TAB = [{
   label: 'file',
   name: '文件',
 }]
-const currentTab = ref('text')
+const currentTab = ref('file')
 function onTabClick(label: string) {
   // console.log('onTabClick', label)
   currentTab.value = label
 }
-function onFileSelected() {
-  // TODO: 待完善
-  // console.log('onFileSelected', e)
-}
+
 const createTime = ref('')
 const lastModifiedTime = ref('')
 onMounted(() => {
@@ -89,9 +74,7 @@ onMounted(() => {
 
   }, 100)
 })
-// function handleCtrlS() {
-//   saveText()
-// }
+
 document.addEventListener('keydown', (e) => {
   if ((window.navigator.userAgent.match('Mac') ? e.metaKey : e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
     e.preventDefault()
@@ -109,13 +92,17 @@ function handleInput() {
 
 const headerR = ref('')
 
+function onaddfile(err: any, file: any) {
+  console.warn('addfile', err, file)
+}
+
 onBeforeUnmount(() => {
   saveTextInterval.value && clearInterval(saveTextInterval.value)
 })
 </script>
 
 <template>
-  <div h-full p-b-6>
+  <div ml-a mr-a h-full max-w-7xl p-b-6>
     <div inline-block flex text-4xl class="header">
       <div i-whh-pastealt w-4 />
       <p ref="headerR" ml-2 font-size-4>
@@ -134,41 +121,26 @@ onBeforeUnmount(() => {
         </div>
         <div v-if="currentTab === 'text'" class="note-area" ha w-full>
           <textarea
-            id="note" v-model="textareaContent" name="note" w-full resize-none border outline-none
-            placeholder="可以随便记录点什么，单次支持20万字符..." @input="handleInput"
+            id="note" v-model="textareaContent" class="custom-scrollbar" name="note" w-full resize-none border
+            border-coolgray outline-none placeholder="可以随便记录点什么，单次支持20万字符..." @input="handleInput"
           />
+
+          <div class="content-right" flex-auto>
+            <n-button color="green" @click="copyToClipboard">
+              <template #icon>
+                <NIcon>
+                  <CopyOutline />
+                </NIcon>
+              </template>
+              复制文本
+            </n-button>
+          </div>
         </div>
         <div v-if="currentTab === 'file'" class="note-area" min-h-lg w-full border>
           <span>最多上传10个文件，单文件50MB内，总大小500MB内， 当前已传 0 个文件，共计 10.1KB，还能上传 10 个文件，有效期为上传后7天内。
             如需大文件传送，可以使用 即时传，支持500M以内大小文件传送。</span>
-          <input type="file" multiple @input="onFileSelected">
+          <FileOpen id="filepond" @addfile="onaddfile" />
         </div>
-      </div>
-      <div class="content-right" flex-auto>
-        <n-button color="#8a2be2" @click="copyToClipboard">
-          <template #icon>
-            <NIcon>
-              <CopyOutline />
-            </NIcon>
-          </template>
-          复制文本
-        </n-button>
-        <!-- <el-button type="primary" :icon="DocumentCopy" @click="copyToClipboard">复制文本</el-button> -->
-        <!-- <button m-3 text-sm btn>
-          下载保存
-        </button>
-        <div class="info">
-          创建时间：
-          {{ createTime }}
-          更新时间：
-          {{ lastModifiedTime }}
-          上次查看：
-          2023-11-04 10:27:02
-          过期删除时间：(三年后)
-          2026-11-03 10:27:02
-          查看次数：
-          105次
-        </div> -->
       </div>
     </div>
   </div>
@@ -176,7 +148,7 @@ onBeforeUnmount(() => {
 
 <style type="less" scoped>
 button {
-  background-color: #8a2be2;
+  background-color: green;
 }
 
 .tab {
@@ -184,6 +156,10 @@ button {
     border: 1px solid rgb(255, 255, 255);
     background: rgb(238, 238, 238);
   }
+}
+
+.note-area:has(#filepond) {
+  border: none;
 }
 
 #note {
@@ -200,5 +176,10 @@ button {
   &:focus {
     box-shadow: 0 3px 10px rgba(0, 0, 255, 0.3);
   }
+}
+
+#filepond {
+  margin: auto;
+  width: 50%;
 }
 </style>

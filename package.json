@@ -27,6 +27,7 @@
     "element-plus": "^2.4.2",
     "filepond": "^4.30.6",
     "filepond-plugin-file-validate-size": "^2.2.8",
+    "filepond-plugin-file-validate-type": "^1.2.9",
     "nprogress": "^0.2.0",
     "pinia": "^2.1.6",
     "vue": "^3.3.4",

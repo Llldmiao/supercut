@@ -35,6 +35,9 @@ dependencies:
   filepond-plugin-file-validate-size:
     specifier: ^2.2.8
     version: 2.2.8(filepond@4.30.6)
+  filepond-plugin-file-validate-type:
+    specifier: ^1.2.9
+    version: 1.2.9(filepond@4.30.6)
   nprogress:
     specifier: ^0.2.0
     version: 0.2.0
@@ -6090,6 +6093,14 @@ packages:
     resolution: {integrity: sha512-yzb8scATmkWqPTP7oKQz6L8WwJm6Xmgc/fuq6DFGRaLz0I7372BUvBsxagBk/hypMIjvieNzhggm33Y60x3rcw==}
     peerDependencies:
       filepond: '>=3.1.2 <5.x'
+    dependencies:
+      filepond: 4.30.6
+    dev: false
+
+  /filepond-plugin-file-validate-type@1.2.9(filepond@4.30.6):
+    resolution: {integrity: sha512-Tzv07aNdZvjUXDRA3XL16QMEvh6llDrXlcZ6W0eTHQ+taHaVg/JKJTFs/AViO+6ZcpPCcQStbhYEL2HoS+vldw==}
+    peerDependencies:
+      filepond: '>=1.x <5.x'
     dependencies:
       filepond: 4.30.6
     dev: false

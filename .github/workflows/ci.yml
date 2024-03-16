@@ -94,3 +94,36 @@ jobs:
           install-command: echo
           build: pnpm run build
           start: npx vite preview --port 3333
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache
+          key: cypress-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - uses: pnpm/action-setup@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          registry-url: https://registry.npmjs.org/
+          cache: pnpm
+
+      - run: pnpm install
+
+      - name: build
+        run: pnpm build
+
+      - name: deploy to server
+        uses: wlixcc/SFTP-Deploy-Action@v1.0
+        with:
+          username: ${{ secrets.USERNAME }} # ssh user name
+          server: '${{ secrets.SERVER_IP }}' # 引用之前创建好的secret
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }} # 引用之前创建好的secret
+          local_path: './dist/*' # 对应我们项目build的文件夹路径
+          remote_path: /website/dist
