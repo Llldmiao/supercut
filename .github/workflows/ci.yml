@@ -120,10 +120,11 @@ jobs:
         run: pnpm build
 
       - name: deploy to server
-        uses: wlixcc/SFTP-Deploy-Action@v1.0
+        uses: zhenyuWang/Upload-File-Action@v1.0.1
         with:
           username: ${{ secrets.USERNAME }} # ssh user name
-          server: '${{ secrets.SERVER_IP }}' # 引用之前创建好的secret
+          server: ${{ secrets.SERVER_IP }} # 引用之前创建好的secret
+          port: '22'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }} # 引用之前创建好的secret
           local_path: './dist/*' # 对应我们项目build的文件夹路径
-          remote_path: /website/dist
+          target_path: /website/dist
