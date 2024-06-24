@@ -16,6 +16,7 @@ import Unocss from 'unocss/vite'
 import Shiki from 'markdown-it-shiki'
 import WebfontDownload from 'vite-plugin-webfont-dl'
 import { ElementPlusResolver, NaiveUiResolver } from 'unplugin-vue-components/resolvers'
+import { setup } from '@css-render/vue3-ssr'
 
 export default defineConfig({
   resolve: {
@@ -164,6 +165,17 @@ export default defineConfig({
     crittersOptions: {
       reduceInlineStyles: false,
     },
+    async onBeforePageRender(_: any, __: any, appCtx: any) {
+      const { collect } = setup(appCtx.app)
+      ;(appCtx as any).__collectStyle = collect
+      return undefined
+    },
+    async onPageRendered(_, renderedHTML, appCtx) {
+      return renderedHTML.replace(
+        /<\/head>/,
+        `${(appCtx as any).__collectStyle()}</head>`,
+      )
+    },
     onFinished() {
       generateSitemap()
     },
@@ -171,7 +183,7 @@ export default defineConfig({
 
   ssr: {
     // TODO: workaround until they support native ESM
-    noExternal: ['workbox-window', /vue-i18n/],
+    noExternal: ['workbox-window', /vue-i18n/, 'naive-ui', 'vueuc', 'date-fns'],
   },
   server: {
     proxy: {
