@@ -26,12 +26,12 @@ const { t } = useI18n()
       请输入剪切板名称并按enter进入
     </div>
     <div mt-8 max-w-md w-full px-10>
-      <form flex items-center space-x-2>
+      <div flex items-center space-x-2>
         <n-input id="input" v-model:value="name" type="text" placeholder="粘贴板名称" flex-1 @keydown.enter="go" />
         <n-button class="bg-[#2f2f31]" color="#2f2f31" @click="go">
           {{ t('button.go') }}
         </n-button>
-      </form>
+      </div>
     </div>
   </div>
 </template>
