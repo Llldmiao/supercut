@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import axios from 'axios'
 import copy from 'copy-to-clipboard'
-import { ElMessage } from 'element-plus'
 
-// import { DocumentCopy } from '@element-plus/icons-vue'
 import { CopyOutline } from '@vicons/ionicons5'
-import { NIcon } from 'naive-ui'
+import { NIcon, useMessage } from 'naive-ui'
 
 const API = {
   queryDetails: '/clipboard/queryDetails',
@@ -20,17 +18,19 @@ const route = useRoute()
 const clipboardName = ref(route.params.all[0])
 
 const textareaContent = ref('')
+const message = useMessage()
 
 function copyToClipboard() {
+  // console.log(textareaContent.value);
+
   copy(textareaContent.value, {
     debug: true,
     message: 'Copy to clipboard',
     format: 'text/html',
   })
-  ElMessage({
-    message: '已复制~~',
-    type: 'success',
-  })
+  message.success(
+    'Copy to clipboard',
+  )
 }
 
 async function saveText() {
